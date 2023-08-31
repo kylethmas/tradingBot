@@ -179,7 +179,7 @@ def save_data(alg_name, alg_model, metrics):
 
 
 if __name__=="__main__":
-    TICKR_STR = 'AAPL'
+    TICKR_STR = input("Enter tickr:")
     stock_data = data_prep(TICKR_STR)
     generated_signals, signals = signal_incoporation(TICKR_STR)
     alg_signals = {Algorithms: signals

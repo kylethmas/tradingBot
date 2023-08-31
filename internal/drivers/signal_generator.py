@@ -241,10 +241,10 @@ def test(ticker):
     plt.show()
 
 if __name__=="__main__":
-    ticker_str = input("Enter tickr:")
-    check_ticker(ticker_str)
-    yf_ticker = get_historical_data(ticker_str)
+    TICKR_STR = input("Enter tickr:")
+    check_ticker(TICKR_STR)
+    yf_ticker = get_historical_data(TICKR_STR)
     print(yf_ticker)
-    mean_reversion_alg(ticker_str)
-    momentum_trading(ticker_str)
-    algo_trading(ticker_str)
+    mean_reversion_alg(TICKR_STR)
+    momentum_trading(TICKR_STR)
+    algo_trading(TICKR_STR)
