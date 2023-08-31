@@ -56,20 +56,22 @@ def strategy_implementation():
 def backtesting(signals_data, initial_capital=100000):
     """
     Backtesting function for evaluating trading strategy performance.
-    
+
     Parameters:
     - signals_data (pd.DataFrame): DataFrame containing trading signals and trade actions.
     - initial_capital (float): Initial capital in dollars.
-    
+
     Returns:
     - pd.DataFrame: DataFrame with portfolio values after backtesting.
     """
+
     # Calculate portfolio values based on trading signals and actions
     signals_data['Portfolio'] = initial_capital + (signals_data['Trade'] * stock_data['Close'])
 
     # Fill missing portfolio values using forward fill
     signals_data['Portfolio'] = signals_data['Portfolio'].fillna(method='ffill')
 
+    # Return the trading strategy's returns dataframe.
     return signals_data
 
 def gen_metrics(signals_data):
@@ -127,6 +129,13 @@ def show_data(title,metrics):
 
     # Display the plots
     plt.show()
+    return plt
+
+def save_data(alg_name, alg_model, metrics):
+    """ Saves data """
+    alg_model.to_csv(f'internal/drivers/tickrOutputs/{TICKR_STR}/{TICKR_STR}{alg_name}_model.csv')
+    metricsdf = pd.DataFrame(metrics)
+    metricsdf.to_csv(f'internal/drivers/tickrOutputs/{TICKR_STR}/{TICKR_STR}{alg_name}_metrics.csv')
 
 
 # Step 7: Parameter Optimization (Optional)
@@ -150,6 +159,7 @@ if __name__=="__main__":
     print(strategy_implementation())
     print(alg_signals)
     for name,model in zip(Algorithms, signals):
-        backtesting(model)
+        print(backtesting(model))
         model_metrics = gen_metrics(model)
-        show_data(name, model_metrics)
+        figure = show_data(name, model_metrics)
+        save_data(name, model, model_metrics)
