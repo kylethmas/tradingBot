@@ -64,15 +64,39 @@ def backtesting(signals_data, initial_capital=100000):
     Returns:
     - pd.DataFrame: DataFrame with portfolio values after backtesting.
     """
+    # Initialize the portfolio value
+    shares_owned = 0
+    cash_held = initial_capital
+    portfolio_value = 0
 
-    # Calculate portfolio values based on trading signals and actions
-    signals_data['Portfolio'] = initial_capital + (signals_data['Trade'] * stock_data['Close'])
+    # Loop over the rows of the signals dataframe
+    for i in range(len(signals_data)):
+        # Get the current signal and position
+        signal = signals_data.loc[i, "Signals"]
+
+        # Update the portfolio value
+        if signal == 1:
+            # Calculate the number of shares
+            shares_owned += cash_held / stock_data.loc[i, "Close"]
+            cash_held = 0
+        elif signal == -1:
+            cash_held += stock_data.loc[i, "Close"] * shares_owned
+            shares_owned = 0
+        else:
+            pass
+
+        portfolio_value = cash_held + shares_owned * stock_data.loc[i, "Close"]
+        # Add the portfolio value to the signals_data DataFrame
+        signals_data.loc[i, "Portfolio"] = portfolio_value
 
     # Fill missing portfolio values using forward fill
     signals_data['Portfolio'] = signals_data['Portfolio'].fillna(method='ffill')
+    print(signals_data)
 
     # Return the trading strategy's returns dataframe.
     return signals_data
+
+
 
 def gen_metrics(signals_data):
     """
@@ -149,6 +173,10 @@ def save_data(alg_name, alg_model, metrics):
 
 # Step 10: Documentation and Reporting
 # Create a report summarizing the strategy, metrics, and results.
+
+
+
+
 
 if __name__=="__main__":
     TICKR_STR = 'AAPL'
