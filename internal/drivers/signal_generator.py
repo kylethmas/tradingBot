@@ -5,6 +5,8 @@ import pandas as pd
 import yfinance as yf
 from sklearn import linear_model
 
+TICKR_OUTPUT_PATH = 'internal/drivers/tickrOutputs/'
+
 def check_ticker(ticker):
     """
     Check ticker
@@ -25,9 +27,9 @@ def get_historical_data(ticker_string):
     ticker_hist = ticker.history(start="2020-01-01", end="2023-01-01")
     print(ticker_hist.head())
 
-    os.makedirs(f'tickrOutputs/{ticker_string}', exist_ok=True)
+    os.makedirs(f'{TICKR_OUTPUT_PATH}{ticker_string}', exist_ok=True)
 
-    ticker_hist.to_csv(f'tickrOutputs/{ticker_string}/{ticker_string}.csv')
+    ticker_hist.to_csv(f'{TICKR_OUTPUT_PATH}{ticker_string}/{ticker_string}.csv')
     return ticker
 
 
@@ -59,7 +61,7 @@ def mean_reversion_alg(ticker):
     return to their mean, or average, value. 
     """
     # Load historical data into a dataframe
-    dataframe = pd.read_csv(f'tickrOutputs/{ticker}/{ticker}.csv')
+    dataframe = pd.read_csv(f'{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv')
 
     # Calculate the rolling mean and standard deviation
     rolling_mean = dataframe["Close"].rolling(window=20).mean()
@@ -82,7 +84,10 @@ def mean_reversion_alg(ticker):
     plt.plot(rolling_mean - 2 * rolling_std, label='rolling mean - 2')
     plt.legend()
     plt.show()
-    dataframe["Signals"].to_csv(f"tickrOutputs/{ticker}/{ticker}_meanrev_signals.csv")
+    dataframe.to_csv(
+        f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}_meanrev_signals.csv",
+        columns = ["Date","Signals"]
+        )
 
 
 def plot_momentum_signals(data):
@@ -132,7 +137,7 @@ def momentum_trading(ticker):
     losses in order to determine overbought and oversold conditions of an asset.
     """
     # Load historical data into a dataframe
-    dataframe = pd.read_csv(f"tickrOutputs/{ticker}/{ticker}.csv")
+    dataframe = pd.read_csv(f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv")
 
     # Create a new column for the 14-day relative strength index (RSI)
     delta = dataframe['Close'].diff()
@@ -147,7 +152,10 @@ def momentum_trading(ticker):
     # Generate trading signals
     signals = generate_rsi_signals(dataframe)
     dataframe['Signals'] = signals
-    dataframe["Signals"].to_csv(f"tickrOutputs/{ticker}/{ticker}_momentum_signals.csv")
+    dataframe.to_csv(
+        f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}_momentum_signals.csv",
+        columns = ["Date","Signals"]
+        )
     plot_momentum_signals(dataframe)
 
 def generate_model_signals(data, model):
@@ -170,7 +178,7 @@ def algo_trading(ticker):
     """
     Creating an algorithmic trading function usig a Linear regression model
     """
-    dataframe = pd.read_csv(f"tickrOutputs/{ticker}/{ticker}.csv")
+    dataframe = pd.read_csv(f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv")
 
 
     # Use linear regression to fit a model to the data
@@ -182,7 +190,10 @@ def algo_trading(ticker):
     # Generate trading signals
     signals = generate_model_signals(dataframe, model)
     dataframe["Signals"] = signals
-    dataframe["Signals"].to_csv(f"tickrOutputs/{ticker}/{ticker}_model_signals.csv")
+    dataframe.to_csv(
+        f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}_model_signals.csv",
+        columns = ["Date","Signals"]
+        )
 
 
 def test(ticker):
@@ -191,12 +202,15 @@ def test(ticker):
     """
 
     # Load historical data into a dataframe
-    dataframe = pd.read_csv(f"tickrOutputs/{ticker}/{ticker}.csv")
+    dataframe = pd.read_csv(f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv")
 
 
     # Initialize variables for the strategy
     initial_capital = 100000
-    positions = pd.read_csv(f"tickrOutputs/{ticker}/{ticker}_meanrev_signals.csv",usecols="Signals")
+    positions = pd.read_csv(
+        f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}_meanrev_signals.csv",
+        usecols="Signals"
+        )
     cash = []
 
     print(positions)
