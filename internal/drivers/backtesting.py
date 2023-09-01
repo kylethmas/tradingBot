@@ -2,26 +2,27 @@
 from functools import reduce
 import pandas as pd
 import matplotlib.pyplot as plt
-Algorithms = ["mean_rev", "linear_model", "momentum"]
+Algorithms = ["momentum", "mean_rev", "linear_model"]
+TICKR_OUTPUT_PATH = 'tickrOutputs/'
 
 
 def data_prep(ticker):
     """
     # Load historical stock data
     """
-    data = pd.read_csv(f'internal/drivers/tickrOutputs/{ticker}/{ticker}.csv')
+    data = pd.read_csv(f'{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv')
     data['Date'] = pd.to_datetime(data['Date'])
     return data
 
 def signal_incoporation(ticker):
     """ Load generated signals """
-    mean_rev_signals = pd.read_csv(
-        f'internal/drivers/tickrOutputs/{ticker}/{ticker}_meanrev_signals.csv')
-    model_signals = pd.read_csv(
-        f'internal/drivers/tickrOutputs/{ticker}/{ticker}_model_signals.csv')
     momentum_signals = pd.read_csv(
-        f'internal/drivers/tickrOutputs/{ticker}/{ticker}_momentum_signals.csv')
-    signals_dfs = [mean_rev_signals, model_signals, momentum_signals]
+        f'{TICKR_OUTPUT_PATH}{ticker}/{ticker}_momentum_signals.csv')
+    mean_rev_signals = pd.read_csv(
+        f'{TICKR_OUTPUT_PATH}{ticker}/{ticker}_meanrev_signals.csv')
+    model_signals = pd.read_csv(
+        f'{TICKR_OUTPUT_PATH}{ticker}/{ticker}_model_signals.csv')
+    signals_dfs = [momentum_signals, mean_rev_signals, model_signals]
 
     # Merge signals with historical data
     combined_signals = reduce(lambda  left,right: pd.merge(
@@ -29,7 +30,7 @@ def signal_incoporation(ticker):
     # ToDo change merging so that counter columns are not merged and column names are meaningful
     combined_signals.drop(combined_signals.columns[[0,3,5]], axis=1, inplace=True)
     print(combined_signals)
-    return combined_signals, [mean_rev_signals,model_signals,momentum_signals]
+    return combined_signals, signals_dfs
 
 def strategy_implementation():
     """ 
@@ -157,9 +158,9 @@ def show_data(title,metrics):
 
 def save_data(alg_name, alg_model, metrics):
     """ Saves data """
-    alg_model.to_csv(f'internal/drivers/tickrOutputs/{TICKR_STR}/{TICKR_STR}{alg_name}_model.csv')
+    alg_model.to_csv(f'{TICKR_OUTPUT_PATH}{TICKR_STR}/{TICKR_STR}{alg_name}_model.csv')
     metricsdf = pd.DataFrame(metrics)
-    metricsdf.to_csv(f'internal/drivers/tickrOutputs/{TICKR_STR}/{TICKR_STR}{alg_name}_metrics.csv')
+    metricsdf.to_csv(f'{TICKR_OUTPUT_PATH}{TICKR_STR}/{TICKR_STR}{alg_name}_metrics.csv')
 
 
 # Step 7: Parameter Optimization (Optional)

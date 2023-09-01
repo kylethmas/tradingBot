@@ -5,7 +5,7 @@ import pandas as pd
 import yfinance as yf
 from sklearn import linear_model
 
-TICKR_OUTPUT_PATH = 'internal/drivers/tickrOutputs/'
+TICKR_OUTPUT_PATH = 'tickrOutputs/'
 
 def check_ticker(ticker):
     """
@@ -82,6 +82,7 @@ def mean_reversion_alg(ticker):
     plt.plot(rolling_mean, label='rolling mean')
     plt.plot(rolling_mean + 2 * rolling_std, label='rolling mean + 2')
     plt.plot(rolling_mean - 2 * rolling_std, label='rolling mean - 2')
+    plt.title("Mean Reversion Algorithm using bolligner bands")
     plt.legend()
     plt.show()
     dataframe.to_csv(
@@ -99,15 +100,14 @@ def plot_momentum_signals(data):
     signals: A pandas DataFrame of momentum trading signals.
     """
 
-    signals = data["Signals"]
+    # signals = data["Signals"]
 
     fig, ax1 = plt.subplots()
 
     ax1.plot(data["Close"])
-    ax1.plot(signals, color="red")
 
-    ax1.set(xlabel="Date", ylabel="Price", title="Momentum Trading Signals")
-    ax1.legend(["Close", "Signals"])
+    ax1.set(xlabel="Date", ylabel="Price", title="Tickr performance")
+    ax1.legend("Close")
     fig.show()
     plt.show()
 
@@ -245,6 +245,6 @@ if __name__=="__main__":
     check_ticker(TICKR_STR)
     yf_ticker = get_historical_data(TICKR_STR)
     print(yf_ticker)
-    mean_reversion_alg(TICKR_STR)
     momentum_trading(TICKR_STR)
+    mean_reversion_alg(TICKR_STR)
     algo_trading(TICKR_STR)
