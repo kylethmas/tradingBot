@@ -30,6 +30,9 @@ def get_historical_data(ticker_string):
     os.makedirs(f'{TICKR_OUTPUT_PATH}{ticker_string}', exist_ok=True)
 
     ticker_hist.to_csv(f'{TICKR_OUTPUT_PATH}{ticker_string}/{ticker_string}.csv')
+
+    plot_tickr_history(ticker_hist)
+
     return ticker
 
 
@@ -91,16 +94,13 @@ def mean_reversion_alg(ticker):
         )
 
 
-def plot_momentum_signals(data):
+def plot_tickr_history(data):
     """
-    This function plots the signals compared to the actual data.
+    This function plots a tcikrs close price history.
 
     Args:
     data: A pandas DataFrame of historical prices.
-    signals: A pandas DataFrame of momentum trading signals.
     """
-
-    # signals = data["Signals"]
 
     fig, ax1 = plt.subplots()
 
@@ -156,7 +156,6 @@ def momentum_trading(ticker):
         f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}_momentum_signals.csv",
         columns = ["Date","Signals"]
         )
-    plot_momentum_signals(dataframe)
 
 def generate_model_signals(data, model):
     """
@@ -195,50 +194,6 @@ def algo_trading(ticker):
         columns = ["Date","Signals"]
         )
 
-
-def test(ticker):
-    """
-    Functioanlity not working
-    """
-
-    # Load historical data into a dataframe
-    dataframe = pd.read_csv(f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv")
-
-
-    # Initialize variables for the strategy
-    initial_capital = 100000
-    positions = pd.read_csv(
-        f"{TICKR_OUTPUT_PATH}{ticker}/{ticker}_meanrev_signals.csv",
-        usecols="Signals"
-        )
-    cash = []
-
-    print(positions)
-
-    # Iterate through the data and execute trades
-    for i in range(len(dataframe)):
-        if i == 0:
-            cash.append(initial_capital)
-        else:
-
-            # Execute trades
-            if positions[i] == 1:
-                cash.append(cash[i-1] - dataframe['Open'][i])
-            elif positions[i] == -1:
-                cash.append(cash[i-1] + dataframe['Open'][i])
-            else:
-                cash.append(cash[i-1])
-
-    # Add the cash and position values to the dataframe
-    dataframe['Positions'] = positions
-    dataframe['Cash'] = cash
-
-    # Calculate the total value of the portfolio
-    dataframe['Total'] = dataframe['Cash'] + dataframe['Open'] * dataframe['Positions']
-
-    # Plot the portfolio value over time
-    plt.plot(dataframe['Total'])
-    plt.show()
 
 if __name__=="__main__":
     TICKR_STR = input("Enter tickr:")
