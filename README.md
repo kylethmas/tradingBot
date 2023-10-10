@@ -30,4 +30,8 @@ Algorithmic trading model
 
 
 the Sharpe ratio measures the performance of an investment compared to a risk-free asset, after adjusting for its risk
-In this case a risk free asset is is you had originally invested in Apple stock
+
+Example Tickers
+- HPE
+- AAPL
+- TSLA

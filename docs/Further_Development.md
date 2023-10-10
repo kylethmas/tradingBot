@@ -2,12 +2,10 @@ Areas for further development - Housekeeping
 - Run entire package from one main.py script
 - Reorder signal_genarotor functions to order that they are called.
 - Add branching strategy and require code review before merging
-- tickrOutputs folder to gitnore
 - Fix virtual env
 
 Areas for further development - Testing
 - Add in unit testing and functional testing
-- Add checks that tickr data exists before calling backtesting
 
 Areas for further development - Shortterms Musts
 - Linear model training and testing data should be different

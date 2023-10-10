@@ -1,14 +1,25 @@
 # pylint: disable=missing-module-docstring
+import os
 from functools import reduce
 import pandas as pd
 import matplotlib.pyplot as plt
 Algorithms = ["momentum", "mean_rev", "linear_model"]
 TICKR_OUTPUT_PATH = 'tickrOutputs/'
 
+def get_tickr():
+    """
+    Get ticker from input and checks data exists, raises value error if nof
+    """
+    ticker = input("Enter ticker:").upper()
+    dir_list = os.listdir(TICKR_OUTPUT_PATH)
+    if ticker not in dir_list:
+        raise ValueError('inputed ticker does not exist, run signal_generator.py and try again')
+    return ticker
+
 
 def data_prep(ticker):
     """
-    # Load historical stock data
+    Load historical stock data
     """
     data = pd.read_csv(f'{TICKR_OUTPUT_PATH}{ticker}/{ticker}.csv')
     data['Date'] = pd.to_datetime(data['Date'])
@@ -32,7 +43,7 @@ def signal_incoporation(ticker):
     print(combined_signals)
     return combined_signals, signals_dfs
 
-def strategy_implementation():
+def strategy_implementation(signals_df, alg_signals_df):
     """ 
     Define a simple trading strategy, defines the activty to make and identifes changes
     """
@@ -43,18 +54,20 @@ def strategy_implementation():
         0: 'Hold'
     }
 
-    generated_signals['Position'] = generated_signals['Signals'].map(signal_to_position)
-    generated_signals['Position'].fillna('Hold', inplace=True)
-    generated_signals['Trade'] = generated_signals['Signals'].diff()
+    signals_df['Position'] = signals_df['Signals'].map(signal_to_position)
+    signals_df['Position'].fillna('Hold', inplace=True)
+    signals_df['Trade'] = signals_df['Signals'].diff()
 
-    for dataframe in alg_signals.values():
+    for dataframe in alg_signals_df.values():
         dataframe['Position'] = dataframe['Signals'].map(signal_to_position)
         dataframe['Position'].fillna('Hold', inplace=True)
         dataframe['Trade'] = dataframe['Signals'].diff()
 
-    return generated_signals
+    print("Strategy Implementation")
 
-def backtesting(signals_data, initial_capital=100000):
+    return signals_df
+
+def backtesting(signals_data, stock_df, initial_capital=100000):
     """
     Backtesting function for evaluating trading strategy performance.
 
@@ -78,15 +91,15 @@ def backtesting(signals_data, initial_capital=100000):
         # Update the portfolio value
         if signal == 1:
             # Calculate the number of shares
-            shares_owned += cash_held / stock_data.loc[i, "Close"]
+            shares_owned += cash_held / stock_df.loc[i, "Close"]
             cash_held = 0
         elif signal == -1:
-            cash_held += stock_data.loc[i, "Close"] * shares_owned
+            cash_held += stock_df.loc[i, "Close"] * shares_owned
             shares_owned = 0
         else:
             pass
 
-        portfolio_value = cash_held + shares_owned * stock_data.loc[i, "Close"]
+        portfolio_value = cash_held + shares_owned * stock_df.loc[i, "Close"]
         # Add the portfolio value to the signals_data DataFrame
         signals_data.loc[i, "Portfolio"] = portfolio_value
 
@@ -156,11 +169,11 @@ def show_data(title,metrics):
     plt.show()
     return plt
 
-def save_data(alg_name, alg_model, metrics):
+def save_data(ticker_name, alg_name, alg_model, metrics):
     """ Saves data """
-    alg_model.to_csv(f'{TICKR_OUTPUT_PATH}{TICKR_STR}/{TICKR_STR}{alg_name}_model.csv')
+    alg_model.to_csv(f'{TICKR_OUTPUT_PATH}{ticker_name}/{ticker_name}{alg_name}_model.csv')
     metricsdf = pd.DataFrame(metrics)
-    metricsdf.to_csv(f'{TICKR_OUTPUT_PATH}{TICKR_STR}/{TICKR_STR}{alg_name}_metrics.csv')
+    metricsdf.to_csv(f'{TICKR_OUTPUT_PATH}{ticker_name}/{ticker_name}{alg_name}_metrics.csv')
 
 
 # Step 7: Parameter Optimization (Optional)
@@ -180,15 +193,15 @@ def save_data(alg_name, alg_model, metrics):
 
 
 if __name__=="__main__":
-    TICKR_STR = input("Enter tickr:")
-    stock_data = data_prep(TICKR_STR)
-    generated_signals, signals = signal_incoporation(TICKR_STR)
+    tickr_str = get_tickr()
+    stock_data = data_prep(tickr_str)
+    generated_signals, signals = signal_incoporation(tickr_str)
     alg_signals = {Algorithms: signals
                    for Algorithms, signals in zip(Algorithms, signals)}
-    print(strategy_implementation())
+    print(strategy_implementation(generated_signals, alg_signals))
     print(alg_signals)
     for name,model in zip(Algorithms, signals):
-        print(backtesting(model))
+        print(backtesting(model, stock_data))
         model_metrics = gen_metrics(model)
         figure = show_data(name, model_metrics)
-        save_data(name, model, model_metrics)
+        save_data(tickr_str, name, model, model_metrics)
